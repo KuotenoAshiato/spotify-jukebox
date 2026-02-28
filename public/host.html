@@ -5,114 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jukebox Host Panel</title>
     <script src="/socket.io/socket.io.js"></script>
-    <link rel="stylesheet" href="css/jukebox.css">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/host.css">
 </head>
 <body>
     <div id="password-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a0b00; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <h2 style="margin-top: 0; color: #ff8c00; text-shadow: 0 0 10px #ff8c00;">🔒 Host Bereich</h2>
+        <h2 style="margin-top: 0; color: #ff8c00;">🔒 Host Bereich</h2>
         <p style="color: #aaa; margin-bottom: 20px;">Bitte Passwort eingeben</p>
         <div id="password-section" style="display: none; text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid #ff8c00; margin-bottom: 20px; box-shadow: 0 0 20px rgba(255, 140, 0, 0.2);">
                 <h2 id="pwd-title" style="color: #ff8c00;">Raum betreten</h2>
                 <p id="pwd-desc" style="color: #aaa;">Lade Raum-Daten...</p>
-                <input type="password" id="host-password-input" placeholder="Passwort eingeben..." style="padding: 12px; font-size: 16px; width: 80%; max-width: 300px; margin-bottom: 20px; background: rgba(0,0,0,0.5); border: 1px solid #ff8c00; color: #ffd700; border-radius: 6px; text-align: center;">
+                <input type="password" id="host-password-input" placeholder="Passwort eingeben..." style="text-align: center; max-width: 300px;">
                 <br>
-                <button class="btn-small" id="pwd-btn" onclick="handlePasswordSubmit()" style="font-size: 16px; padding: 10px 20px;">Bestätigen</button>
+                <button class="btn-small btn-success" id="pwd-btn" onclick="handlePasswordSubmit()">Bestätigen</button>
             </div>
     </div>
-    <div class="container">
-        <div id="login-section" style="text-align: center; padding: 40px 0;">
-            <h1>🎧 Host Login</h1>
-            <button class="btn-small" style="font-size: 16px; padding: 10px 20px;" onclick="window.location.href='/api/login?room=' + encodeURIComponent(roomId)">Mit Spotify verbinden</button>
+
+    <div id="login-section" style="text-align: center; padding: 40px 0;">
+        <h1 style="color: #ff8c00;">🎧 Host Login</h1>
+        <button class="btn-small btn-success" onclick="window.location.href='/api/login?room=' + encodeURIComponent(roomId)">Mit Spotify verbinden</button>
+    </div>
+
+    <div id="app-section" style="display: none;">
+        <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ff8c00; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="margin: 0; color: #ff8c00;">Host Panel</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-small" onclick="window.open('/guest?room=' + encodeURIComponent(roomId), '_blank')">📱 Gast</button>
+                <button class="btn-small" onclick="window.open('/jukebox?room=' + encodeURIComponent(roomId), '_blank')">📺 Display</button>
+                
+                <button id="suggestions-btn" class="btn-small" onclick="openSuggestionsModal()" style="position: relative;">
+                    💡 Vorschläge
+                    <span id="suggestion-badge" style="display: none; background: #E22134; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; position: absolute; top: -8px; right: -8px; font-weight: bold; border: 2px solid #1a0b00;">0</span>
+                </button>
+                
+                <button class="btn-small" onclick="renderDbManager(); document.getElementById('db-manager-modal').style.display='flex'">⚙️ DB</button>
+                <button id="btn-autodj" class="btn-small" onclick="toggleAutoDJ()">🤖 Auto-DJ: AUS</button>
+                <button class="btn-small" onclick="document.getElementById('layout-modal').style.display='flex'">📺 Layout</button>
+                <button class="btn-small btn-danger" onclick="skipTrack()">Skip</button>
+                <button class="btn-small btn-danger" onclick="logoutSpotify()">Logout</button>
+            </div>
+        </header>
+
+        <div id="current-playing-section" style="margin-bottom: 20px; padding: 15px; background: rgba(20, 10, 0, 0.85); border: 1px solid #ff8c00; border-radius: 8px; border-left: 4px solid #ff8c00; display: none; box-shadow: 0 0 5px #ff8c00;">
+            <h4 style="margin: 0 0 5px 0; color: #ff8c00; font-size: 12px; text-transform: uppercase;">🎵 Aktuell läuft</h4>
+            <div id="host-current-title" style="font-weight: bold; font-size: 18px; color: #ffd700;">Warte auf Spotify...</div>
+            <div id="host-current-artist" style="color: #ff8c00; font-size: 14px;"></div>
         </div>
 
-        <div id="app-section" style="display: none;">
-            <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ff8c00; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin: 0;">Host Panel</h2>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn-small" onclick="window.open('/guest?room=' + encodeURIComponent(roomId), '_blank')">📱 Gast</button>
-                    <button class="btn-small" onclick="window.open('/jukebox?room=' + encodeURIComponent(roomId), '_blank')">📺 Display</button>
-                    
-                    <button id="suggestions-btn" class="btn-small" onclick="openSuggestionsModal()" style="position: relative; transition: all 0.3s;">
-                        💡 Vorschläge
-                        <span id="suggestion-badge" style="display: none; background: #E22134; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; position: absolute; top: -8px; right: -8px; font-weight: bold; border: 2px solid #1a0b00;">0</span>
-                    </button>
-                    
-                    <button class="btn-small" onclick="renderDbManager(); document.getElementById('db-manager-modal').style.display='flex'">⚙️ DB</button>
-                    <button id="btn-autodj" class="btn-small" onclick="toggleAutoDJ()" style="transition: 0.3s;">🤖 Auto-DJ: AUS</button>
-                    <button class="btn-small" onclick="document.getElementById('layout-modal').style.display='flex'">📺 Layout</button>
-                    <button class="btn-small btn-danger" onclick="skipTrack()">Skip</button>
-                    <button class="btn-small btn-danger" onclick="logoutSpotify()">Logout</button>
-                </div>
-            </header>
-
-            <div id="current-playing-section" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 8px; border-left: 4px solid #ff8c00; display: none;">
-                <h4 style="margin: 0 0 5px 0; color: #ff8c00; font-size: 12px; text-transform: uppercase;">🎵 Aktuell läuft</h4>
-                <div id="host-current-title" style="font-weight: bold; font-size: 18px;">Warte auf Spotify...</div>
-                <div id="host-current-artist" style="color: #aaa; font-size: 14px;"></div>
+        <input type="text" id="search-input" placeholder="Song suchen... (Enter)" onkeypress="if(event.key === 'Enter') searchSong()">
+        <div id="search-results" style="margin-bottom: 20px;"></div>
+        
+        <div style="background: rgba(20, 10, 0, 0.85); border: 1px solid #E22134; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #E22134; box-shadow: 0 0 5px #E22134;">
+            <h4 style="margin: 0 0 10px 0; color: #E22134;">🗳️ RTV & Genre-Voting</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <label style="font-size: 14px; color: #ffd700;">Benötigte Votes für Genre-Wechsel: <strong id="rtv-threshold-val" style="color: white;">3</strong></label>
+                <span style="font-size: 12px; color: #ff8c00;">Aktuell: <strong id="rtv-current-votes" style="color: #E22134;">0</strong> Votes</span>
             </div>
-
-            <input type="text" id="search-input" placeholder="Song suchen... (Enter)" onkeypress="if(event.key === 'Enter') searchSong()">
-            <div id="search-results" style="margin-bottom: 20px;"></div>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #E22134;">
-                <h4 style="margin: 0 0 10px 0; color: #E22134;">🗳️ RTV & Genre-Voting</h4>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <label style="font-size: 14px;">Benötigte Votes für Genre-Wechsel: <strong id="rtv-threshold-val" style="color: white;">3</strong></label>
-                    <span style="font-size: 12px; color: gray;">Aktuell: <strong id="rtv-current-votes" style="color: #E22134;">0</strong> Votes</span>
-                </div>
-                <input type="range" id="rtv-threshold-slider" min="1" max="20" value="3" onchange="updateRtvThreshold(this.value)" style="width: 100%; cursor: pointer;">
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Warteschlange</h3>
-                <button class="btn-small btn-danger" onclick="clearQueue()">Leeren</button>
-            </div>
-            <ul id="queue-list" style="list-style: none; padding: 0;"></ul>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
-                <h3 style="color: #aaa;">Bereits gespielt</h3>
-                <button class="btn-small btn-danger" onclick="clearHistory()">Leeren</button>
-            </div>
-            <ul id="history-list" style="list-style: none; padding: 0; opacity: 0.6;"></ul>
+            <input type="range" id="rtv-threshold-slider" min="1" max="20" value="3" onchange="updateRtvThreshold(this.value)">
         </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; border-bottom: 1px solid #ff8c00; padding-bottom: 5px; margin-bottom: 15px;">
+            <h3 style="color: #ffd700; margin: 0;">📜 Warteschlange</h3>
+            <button class="btn-small btn-danger" onclick="clearQueue()">Leeren</button>
+        </div>
+        <ul id="queue-list" style="list-style: none; padding: 0;"></ul>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; border-bottom: 1px solid #555; padding-bottom: 5px; margin-bottom: 15px;">
+            <h3 style="color: #aaa; margin: 0;">📜 Bereits gespielt</h3>
+            <button class="btn-small btn-danger" onclick="clearHistory()">Leeren</button>
+        </div>
+        <ul id="history-list" style="list-style: none; padding: 0; opacity: 0.6;"></ul>
     </div>
 
     <div id="genre-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin-top: 0;">Genre zuweisen</h3>
+            <h3 style="margin-top: 0; color: #ff8c00;">Genre zuweisen</h3>
             <div id="modal-preset-buttons"></div>
             <input type="text" id="genre-modal-input" placeholder="Oder neues..." style="margin-top: 15px; width: 100%; box-sizing: border-box;">
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button onclick="closeGenreModal(true)" style="flex: 1;">Speichern</button>
-                <button onclick="closeGenreModal(false)" style="flex: 1; background: transparent; border: 1px solid #555; color: #aaa;">Abbrechen</button>
+                <button class="btn-success" onclick="closeGenreModal(true)" style="flex: 1;">Speichern</button>
+                <button onclick="closeGenreModal(false)" style="flex: 1;">Abbrechen</button>
             </div>
         </div>
     </div>
 
     <div id="db-manager-modal" class="modal-overlay">
         <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-            <h3>Datenbank</h3>
+            <h3 style="color: #ff8c00;">Datenbank</h3>
             <button class="btn-small btn-danger" onclick="document.getElementById('db-manager-modal').style.display='none'">Schließen</button>
         </div>
     </div>
+    
     <div id="layout-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 350px;">
             <h3 style="margin-top: 0; color: #ff8c00;">📺 Display Layout</h3>
             <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">Passe das Aussehen der Jukebox-Anzeige live an:</p>
             
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 15px; color: #ffd700;">
+                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #ff8c00; padding-bottom: 10px;">
                     <span>🔍 Suchleiste anzeigen</span>
                     <input type="checkbox" id="toggle-search" onchange="updateLayout()" style="transform: scale(1.3);">
                 </label>
-                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #ff8c00; padding-bottom: 10px;">
                     <span>📜 Sidebar (Queue & Votes)</span>
                     <input type="checkbox" id="toggle-sidebar" onchange="updateLayout()" style="transform: scale(1.3);">
                 </label>
-                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #ff8c00; padding-bottom: 10px;">
                     <span>📱 QR-Code einblenden</span>
                     <input type="checkbox" id="toggle-qr" onchange="updateLayout()" style="transform: scale(1.3);">
                 </label>
-                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <label style="display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #ff8c00; padding-bottom: 10px;">
                     <span>⏱️ Progressbar (Song-Fortschritt)</span>
                     <input type="checkbox" id="toggle-progress" onchange="updateLayout()" style="transform: scale(1.3);">
                 </label>
@@ -125,6 +128,7 @@
             <button class="btn-small btn-danger" style="width: 100%; margin-top: 25px;" onclick="document.getElementById('layout-modal').style.display='none'">Schließen</button>
         </div>
     </div>
+    
     <div id="suggestions-modal" class="modal-overlay">
         <div class="modal-content" style="max-height: 80vh; overflow-y: auto; width: 95%; max-width: 500px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -133,36 +137,34 @@
             </div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="btn-small" style="flex:1; background: rgba(29, 185, 84, 0.2); border-color: #1DB954; color: #1DB954;" onclick="acceptAllSuggestions()">Alle übernehmen</button>
+                <button class="btn-small btn-success" style="flex:1;" onclick="acceptAllSuggestions()">Alle übernehmen</button>
                 <button class="btn-small btn-danger" style="flex:1;" onclick="rejectAllSuggestions()">Alle verwerfen</button>
             </div>
             
-            <div id="suggestions-list">
-                </div>
+            <div id="suggestions-list"></div>
         </div>
     </div>
+    
     <div id="save-tags-modal" class="modal-overlay" style="z-index: 1001;">
         <div class="modal-content" style="text-align: center; max-width: 400px;">
             <h3 style="margin-top: 0; color: #ff8c00;">🏷️ Spotify-Tags speichern?</h3>
-            
             <p style="margin-bottom: 5px;">Künstler: <strong id="tags-modal-artist" style="color: #fff;"></strong></p>
-            <div id="tags-modal-list" style="color: #aaa; font-size: 13px; margin: 10px 0; padding: 10px; background: #111; border-radius: 6px; border: 1px solid #333;">
-                </div>
-            
+            <div id="tags-modal-list" style="color: #aaa; font-size: 13px; margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 6px; border: 1px solid #ff8c00;"></div>
             <p style="font-size: 14px;">Möchtest du diese Tags in Zukunft automatisch der Kategorie <strong id="tags-modal-genre" style="color: #ff8c00;"></strong> zuordnen?</p>
             
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-                <button id="btn-save-tags" class="btn-small" style="background: rgba(29, 185, 84, 0.2); border-color: #1DB954; color: #1DB954;">Ja, Tags speichern</button>
-                <button id="btn-ignore-tags" class="btn-small" style="background: transparent; border: 1px solid #555; color: #aaa;">Nein, nur Künstler zuweisen</button>
+                <button id="btn-save-tags" class="btn-small btn-success">Ja, Tags speichern</button>
+                <button id="btn-ignore-tags" class="btn-small">Nein, nur Künstler zuweisen</button>
             </div>
         </div>
     </div>
+    
     <div id="track-action-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 300px; text-align: center;">
             <h4 id="track-menu-name" style="margin-top: 0; margin-bottom: 20px; color: #ff8c00;">Song Name</h4>
             <button onclick="editGenreFromMenu()" style="width: 100%; margin-bottom: 10px;">✏️ Genre & Block ändern</button>
             <button class="btn-small btn-danger" onclick="deleteTrackFromMenu()" style="width: 100%; margin-bottom: 15px;">Song löschen</button>
-            <button onclick="closeTrackMenu()" style="width: 100%; background: transparent; color: #aaa; border: 1px solid #555;">Abbrechen</button>
+            <button onclick="closeTrackMenu()" style="width: 100%;">Abbrechen</button>
         </div>
     </div>
     
