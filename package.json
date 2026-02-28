@@ -1,0 +1,19 @@
+{
+  "name": "spotify-smart-jukebox-server",
+  "version": "2.0.0",
+  "description": "Backend für die Spotify Jukebox",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
+  }
+}

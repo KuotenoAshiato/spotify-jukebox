@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jukebox Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+    <div id="login-overlay">
+        <h1>🛡️ Admin Access</h1>
+        <input type="password" id="admin-pass" placeholder="Passwort eingeben">
+        <button onclick="login()">Login</button>
+        <p id="login-error" style="color: red; display: none;">Falsches Passwort!</p>
+    </div>
+
+    <div class="container" id="dashboard" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Jukebox Admin Panel</h1>
+            <button onclick="logout()" class="btn-danger">Logout</button>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-val" id="stat-rooms">-</div>
+                <div>Aktive Räume</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="stat-artists">-</div>
+                <div>Gespeicherte Artists</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="stat-conflicts" style="color: #E22134;">-</div>
+                <div>Offene Konflikte</div>
+            </div>
+        </div>
+
+        <!-- ACTIVE ROOMS -->
+        <div class="section">
+            <h2>🏠 Aktive Räume</h2>
+            <div id="rooms-list">
+                <p>Lade Räume...</p>
+            </div>
+        </div>
+
+        <!-- CONFLICTS -->
+        <div class="section" id="conflict-section">
+            <h2>⚠️ Genre Konflikte</h2>
+            <p style="color: #aaa; font-size: 14px;">Diese Künstler wurden in verschiedenen Räumen unterschiedlich kategorisiert.</p>
+            <div id="conflicts-list">
+                <p>Lade Daten...</p>
+            </div>
+        </div>
+
+        <!-- MANUAL EDIT -->
+        <div class="section">
+            <h2>✏️ Artist Bearbeiten / Hinzufügen</h2>
+            <div style="margin-bottom: 15px; color: #aaa;">
+                Modus: 
+                <label style="margin-right: 15px; color: white; cursor: pointer;"><input type="radio" name="db-mode" value="artist" checked onchange="setMode('artist')"> Artists</label>
+                <label style="color: white; cursor: pointer;"><input type="radio" name="db-mode" value="genre" onchange="setMode('genre')"> Raw Genres</label>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label id="lbl-id" style="display:block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Artist ID</label>
+                    <input type="text" id="edit-id" placeholder="Spotify Artist ID" style="width: 100%; box-sizing: border-box; margin: 0;">
+                </div>
+                <div id="container-name" style="flex: 1; min-width: 200px;">
+                    <label style="display:block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Name</label>
+                    <input type="text" id="edit-name" placeholder="Künstler Name" style="width: 100%; box-sizing: border-box; margin: 0;">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display:block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Ziel-Genre</label>
+                    <input type="text" id="edit-genre" class="genre-input" placeholder="Genre" style="width: 100%; box-sizing: border-box; margin: 0;">
+                </div>
+                <button onclick="saveEntry()" style="margin: 0;">Speichern</button>
+                <button onclick="clearEdit()" style="background: #555; margin: 0;">Reset</button>
+            </div>
+        </div>
+
+        <!-- PLAYLIST IMPORT -->
+        <div class="section">
+            <h2>📜 Playlist Import</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="playlist-id" placeholder="Spotify Playlist Link oder ID" style="flex: 1;">
+                <button onclick="loadPlaylist()">Laden</button>
+            </div>
+            <div id="playlist-results" style="max-height: 400px; overflow-y: auto; display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Artist</th>
+                            <th>Tracks</th>
+                            <th style="display: flex; justify-content: space-between; align-items: center;">
+                                Genre setzen 
+                                <button onclick="saveAllPlaylistArtists()" class="btn-small" style="background: #1DB954;">💾 Alle speichern</button>
+                            </th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playlist-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DATABASE -->
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>💾 Globale Datenbank <span id="db-mode-display" style="font-size: 0.6em; color: #777;">(Artists)</span></h2>
+                <input type="text" id="search-db" placeholder="Suche Artist..." onkeyup="renderDbList()" style="width: 200px;">
+            </div>
+            <div style="max-height: 500px; overflow-y: auto;">
+                <table id="db-table">
+                    <thead>
+                        <tr id="db-headers">
+                            <th>Artist Name</th>
+                            <th>Genre</th>
+                            <th>ID</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="db-body">
+                        <!-- Content via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

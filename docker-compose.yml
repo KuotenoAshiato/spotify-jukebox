@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  jukebox-app:
+    build: .
+    container_name: spotify-jukebox
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # Hier wird auf den Service-Namen 'mongo' verwiesen
+      - MONGO_URI=mongodb://mongo:27017/jukebox
+      # Diese Variablen kommen aus deiner .env Datei auf dem Server
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      - SPOTIFY_REDIRECT_URI=${SPOTIFY_REDIRECT_URI}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    container_name: jukebox-mongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

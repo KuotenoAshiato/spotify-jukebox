@@ -1,0 +1,82 @@
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+h1, h2, h3 { font-family: 'Orbitron', sans-serif; color: #1DB954; }
+
+.container { max-width: 1000px; margin: 0 auto; }
+
+/* Login Overlay */
+#login-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; z-index: 100; display: flex; justify-content: center; align-items: center; flex-direction: column;
+}
+input, button { padding: 10px; border-radius: 5px; border: none; margin: 5px; }
+button { background: #1DB954; color: white; cursor: pointer; font-weight: bold; }
+button:hover { background: #1ed760; }
+input { background: #333; color: white; border: 1px solid #555; }
+
+/* Sections */
+.section { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
+th { color: #1DB954; }
+tr:hover { background: #2a2a2a; }
+
+/* Badges */
+.badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+.badge-conflict { background: #E22134; color: white; }
+.badge-ok { background: #1DB954; color: black; }
+
+/* Actions */
+.actions { display: flex; gap: 5px; }
+.btn-small { padding: 5px 10px; font-size: 12px; }
+.btn-danger { background: #E22134; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+.stat-card { background: #252525; padding: 15px; border-radius: 8px; text-align: center; }
+.stat-val { font-size: 24px; font-weight: bold; color: #1DB954; font-family: 'Orbitron'; }
+
+/* Custom Autocomplete Dropdown */
+.autocomplete-suggestions {
+    position: absolute;
+    border: 1px solid #444;
+    border-top: none;
+    z-index: 9999;
+    background-color: #252525;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    border-radius: 0 0 5px 5px;
+    width: 200px; /* Fallback */
+}
+
+.autocomplete-suggestion {
+    padding: 10px;
+    cursor: pointer;
+    color: #e0e0e0;
+    border-bottom: 1px solid #333;
+}
+
+.autocomplete-suggestion:hover {
+    background-color: #1DB954;
+    color: #fff;
+}
+
+/* Saved Row Feedback */
+.saved-row {
+    background-color: rgba(29, 185, 84, 0.15) !important;
+    transition: background-color 0.3s ease;
+}
+.saved-row td {
+    color: #888;
+}
+.saved-row strong {
+    color: #1DB954;
+    text-decoration: line-through;
+}

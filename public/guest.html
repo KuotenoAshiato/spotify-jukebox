@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Song wünschen!</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="css/guest.css">
+</head>
+<body>
+
+    <h2>🎶 Wünsch dir was!</h2>
+    <input type="text" id="guest-search-input" placeholder="Song oder Künstler..." onkeypress="if(event.key === 'Enter') searchSong()">
+    <button class="search-btn" onclick="searchSong()">Suchen</button>
+    
+    <div id="status-msg">Warte auf Verbindung zur Jukebox...</div>
+    <div id="search-results" style="margin-top: 20px; padding-bottom: 40px;"></div>
+    <div id="genre-voting-section" style="margin-top: 30px; background: rgba(0,0,0,0.6); border: 1px solid #ff8c00; border-radius: 12px; padding: 15px; display: none;">
+        <h3 style="margin-top: 0; color: #ffd700; text-align: left;">🗳️ Welches Genre als nächstes?</h3>
+        <div id="active-genre-display" style="color: #1DB954; font-size: 14px; margin-bottom: 15px; text-align: left;">Aktuell: -</div>
+        
+        <button id="rtv-btn" onclick="voteRTV()" style="width: 100%; background: #E22134; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-family: 'Orbitron', sans-serif; cursor: pointer;">RTV - Nächstes Genre (0/3)</button>
+
+        <div id="genre-vote-list" style="text-align: left;"></div>
+    </div>
+    <h3 style="margin-top: 30px; color: #ffd700; border-bottom: 1px solid #ff8c00; padding-bottom: 5px; text-align: left;">📜 Warteschlange</h3>
+    <div id="guest-queue-list" style="text-align: left; padding-bottom: 40px;"></div>
+
+    <script src="js/guest.js"></script>
+</body>
+</html>

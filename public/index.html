@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Jukebox - Startseite</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .login-box {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 12px;
+            border: 2px solid #333;
+            box-shadow: 0 0 30px rgba(255, 140, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #ff8c00;
+            text-shadow: 0 0 10px #ff8c00;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #aaa;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 15px;
+            margin-bottom: 25px;
+            background: #222;
+            border: 2px solid #444;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ff8c00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #ff8c00;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #ffa500;
+            box-shadow: 0 0 15px #ff8c00;
+            transform: translateY(-2px);
+        }
+
+        .btn-host {
+            background: transparent;
+            color: #ffd700;
+            border: 2px solid #ffd700;
+        }
+
+        .btn-host:hover {
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h1>🎵 NEON JUKEBOX</h1>
+        <p>Gib den Party-Code ein, um der Session beizutreten.</p>
+        
+        <input type="text" id="room-code" placeholder="z.B. Party123" autocomplete="off" autofocus>
+        <input type="password" id="room-password" placeholder="Raum-Passwort" autocomplete="off" style="width: 90%; padding: 15px; margin-bottom: 25px; background: #222; border: 2px solid #444; color: #fff; font-size: 18px; border-radius: 6px; text-align: center; font-weight: bold;">
+        <button class="btn" onclick="joinSession('guest')">📱 Als Gast beitreten</button>
+        <button class="btn btn-host" onclick="joinSession('host')">🎛️ Als Host anmelden</button>
+        
+        <div style="margin-top: 20px;">
+            <a href="#" onclick="joinSession('jukebox')" style="color: #666; font-size: 12px; text-decoration: none;">📺 Jukebox-Display für diesen Raum öffnen</a>
+        </div>
+    </div>
+
+    <script>
+        async function joinSession(role) {
+            const roomInput = document.getElementById('room-code').value.trim();
+            const passwordInput = document.getElementById('room-password').value.trim();
+            
+            if (!roomInput) {
+                alert("Bitte gib einen Party-Code ein!");
+                document.getElementById('room-code').focus();
+                return;
+            }
+
+            // 1. Raum-Code zu Kleinbuchstaben (Passwort bleibt jedoch Case-Sensitive für mehr Sicherheit!)
+            const normalizedRoom = roomInput.toLowerCase();
+
+            // 2. Wir verketten den Raum-Code und das Passwort. 
+            // Das "_" dient als Trenner, damit z.B. Raum "Party" + PW "123" einen anderen Hash 
+            // ergibt als Raum "Party1" + PW "23".
+            const combinedString = normalizedRoom + "_" + passwordInput;
+
+            // 3. Den kombinierten String sicher mit SHA-256 hashen
+            const encoder = new TextEncoder();
+            const data = encoder.encode(combinedString);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            
+            // 4. Den Hash in einen lesbaren Hex-String umwandeln
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            // 5. Weiterleitung inkl. sicherem Hash
+            window.location.href = `${role}?room=${hashHex}`;
+        }
+
+        // Hilfsfunktion: Enter-Taste drückt automatisch den "Gast"-Button in BEIDEN Feldern
+        function handleEnterPress(e) {
+            if (e.key === 'Enter') {
+                joinSession('guest');
+            }
+        }
+        document.getElementById('room-code').addEventListener('keypress', handleEnterPress);
+        document.getElementById('room-password').addEventListener('keypress', handleEnterPress);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jukebox Display</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="css/jukebox.css">
+</head>
+<body>
+    <div id="waiting-msg">Warte auf Host-Login...</div>
+    <div id="jukebox-sidebar" style="position: absolute; left: 30px; top: 30px; bottom: 30px; width: 320px; display: none; flex-direction: column; background: rgba(0,0,0,0.65); backdrop-filter: blur(10px); border: 2px solid #ff8c00; border-radius: 15px; box-shadow: 0 0 20px rgba(255,140,0,0.4); z-index: 50; padding: 20px; box-sizing: border-box;">
+        
+        <h3 style="color: #ffd700; margin-top: 0; text-shadow: 0 0 5px #ffd700; border-bottom: 1px solid #ff8c00; padding-bottom: 10px;">📜 Next Up</h3>
+        
+        <div id="display-queue-list" style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;"></div>
+
+        <div id="display-voting-section" style="border-top: 1px solid #ff8c00; padding-top: 15px; border-radius: 8px;">
+            <h4 style="color: #1DB954; margin: 0 0 10px 0; text-shadow: 0 0 5px #1DB954;">🗳️ Genre Voting Live</h4>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 13px; color: #aaa;">RTV (Skip Genre):</span>
+                <span id="display-rtv-status" style="color: #E22134; font-weight: bold; font-size: 14px; background: rgba(226,33,52,0.2); padding: 3px 8px; border-radius: 10px; border: 1px solid #E22134;">0/3</span>
+            </div>
+            
+            <div id="display-genre-votes" style="font-size: 13px; color: #fff; display: flex; flex-direction: column; gap: 5px;"></div>
+        </div>
+    </div>
+    <div id="neon-coverflow" style="display: none;">
+        <div class="cover-side left-covers" id="cf-history"></div>
+        <div class="cover-center">
+            <img id="cf-current-img" class="visualizer-pulse" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Cover">
+            
+            <div id="neon-fallback-label">🎧 Fallback Playlist</div>
+            
+            <div style="height: 85px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 5px;">
+                <div id="neon-title">...</div>
+                <div id="neon-artist">...</div>
+            </div>
+            
+            <div id="progress-wrapper" style="display: none; align-items: center; justify-content: space-between; width: 100%; margin-top: 15px;">
+                <span id="progress-time-current" style="font-size: 13px; color: #ff8c00; width: 45px; text-align: left; font-weight: bold; font-family: 'Orbitron', sans-serif;">0:00</span>
+                
+                <div id="progress-container" style="flex: 1; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 4px; margin: 0 10px; overflow: hidden; box-shadow: 0 0 10px rgba(255, 140, 0, 0.2) inset;">
+                    <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff8c00, #ffd700); box-shadow: 0 0 15px #ff8c00; transition: width 2s linear;"></div>
+                </div>
+                
+                <span id="progress-time-total" style="font-size: 13px; color: #ffd700; width: 45px; text-align: right; font-weight: bold; font-family: 'Orbitron', sans-serif;">0:00</span>
+            </div>
+        </div>
+        <div class="cover-side right-covers" id="cf-queue"></div>
+    </div>
+    <div id="qr-container" style="position: fixed; bottom: 30px; right: 30px; text-align: center; display: none; z-index: 100;">
+        <p style="color: #ff8c00; font-size: 14px; margin-bottom: 8px; text-shadow: 0 0 10px #ff8c00; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;">🎵 Scan & Wünsch dir was!</p>
+        <img id="qr-code-img" src="" alt="QR Code" style="border: 3px solid #ffd700; border-radius: 8px; width: 120px; height: 120px; box-shadow: 0 0 15px #ffd700;">
+    </div>
+    <div class="search-container" id="guest-search-container" style="display: none; position: absolute; bottom: 30px; width: 90%; max-width: 600px; text-align: center;">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="guest-search-input" placeholder="Wünsch dir einen Song... (Enter)" onkeypress="if(event.key === 'Enter') guestSearchSong()" 
+                   style="flex: 1; padding: 15px; border-radius: 30px; border: 2px solid #ffd700; background: rgba(0,0,0,0.8); color: #ffd700; font-family: 'Orbitron', sans-serif; box-shadow: 0 0 10px #ffd700 inset, 0 0 10px #ffd700; font-size: 16px;">
+            <button onclick="guestSearchSong()" 
+                    style="background: transparent; border: 2px solid #ff4500; color: #ff4500; box-shadow: 0 0 10px #ff4500 inset, 0 0 10px #ff4500; border-radius: 30px; padding: 0 20px; font-family: 'Orbitron', sans-serif; cursor: pointer;">Suchen</button>
+        </div>
+        <div id="guest-search-results" style="margin-top: 15px; background: rgba(0,0,0,0.8); border-radius: 12px; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script src="js/jukebox.js"></script>
+</body>
+</html>
